@@ -24,8 +24,10 @@ use Data::Dumper;
  # print a histogram
  my $maxHistLineLen=50;
  my $histChar='*';
+ my $minValue=2000;
  my $maxValue=5000;
- my $limitOperator = '<=';
+ my $limitOperatorLower = '>=';
+ my $limitOperatorUpper = '<=';
 
  my $h=Histogram->new(
    {
@@ -33,12 +35,16 @@ use Data::Dumper;
       HIST_CHAR => '*',
       BUCKET_COUNT => $bucketCount,
       DATA => \@data,
-      FILTER_OPER =>  $limitOperator,
-      FILTER_LIMIT =>  $maxValue
+      FILTER_OPER_LOWER =>  $limitOperatorLower,
+      FILTER_OPER_UPPER =>  $limitOperatorUpper,
+      FILTER_LIMIT_LOWER =>  $minValue,
+      FILTER_LIMIT_UPPER =>  $maxValue
    }
  );
 
  print join("\n",  @{$h->prepare} ),"\n";
+
+ If the filter limits are to be used, all of the lower and upper values and operators must be set
 
 
 =cut
@@ -72,22 +78,37 @@ sub _createBuckets {
 	my %hdata=();
 
 	FILTER_DATA: {
-		if ( defined($self->{FILTER_OPER}) and defined($self->{FILTER_LIMIT}) ) {
+		if ( 
+				defined($self->{FILTER_OPER_LOWER})
+				and defined($self->{FILTER_OPER_UPPER})
+				and defined($self->{FILTER_LIMIT_LOWER}) 
+				and defined($self->{FILTER_LIMIT_UPPER}) 
+		) {
 			# check for allowed operator
-			my $op=$self->{FILTER_OPER};
 			my @allowedOperators = qw(< > <= >=);
-			if ( ! grep(/^$op$/,@allowedOperators) ) {
+
+			my $opLower=$self->{FILTER_OPER_LOWER};
+			if ( ! grep(/^$opLower$/,@allowedOperators) ) {
 				last FILTER_DATA;
 			}
 
-			my $filterValue = $self->{FILTER_LIMIT};
+			my $opUpper=$self->{FILTER_OPER_UPPER};
+			if ( ! grep(/^$opUpper$/,@allowedOperators) ) {
+				last FILTER_DATA;
+			}
+
+			my $filterValueLower = $self->{FILTER_LIMIT_LOWER};
+			my $filterValueUpper = $self->{FILTER_LIMIT_UPPER};
 
 			my @tmpData;
 			#print "OP: $op\n";
 			#print "Value $filterValue\n";
 			my $evalStr= q[grep { $_ ]
-				. qq[ $op  $filterValue ]
+				. qq[ $opLower  $filterValueLower ]
+				. q[ and $_ ]
+				. qq[ $opUpper $filterValueUpper  ]
 				. q[ } @{$self->{DATA}};];
+
 			#print "Eval String; $evalStr\n";
 			@tmpData = eval $evalStr;
 
