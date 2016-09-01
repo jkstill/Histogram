@@ -70,7 +70,7 @@ sub _createBuckets {
 	#print "maxHistogramCount $maxHistogramCount\n";
 
 	$self->{HDATA} = \%hdata;
-	$self->{_countPerChar} = $maxHistLineLen / $maxHistogramCount;
+	$self->{_countPerChar} = $self->{LINE_LENGTH} / $maxHistogramCount;
 	
 	#print '_createBuckets: ', Dumper($self);
 
@@ -89,7 +89,7 @@ sub prepare {
 	
 		my $lineLen = int( $#{$hdata{$bucket}}+1  / $self->{_countPerChar});
 		my $hline = sprintf("%10d: ",$bucket );
-		$hline .= $histChar x int( $lineLen  * $self->{_countPerChar}) ;
+		$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar}) ;
 		push @histogram, $hline;
 		#print "$hline\n";
 	}
