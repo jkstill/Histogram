@@ -7,6 +7,7 @@ WriteMakefile(
 	VERSION_FROM      => 'lib/Histogram.pm', # finds $VERSION
 	EXE_FILES			=> [
 		qw{bin/histogram-demo.pl}
+		qw{bin/data-histogram.pl}
 	],
 	PREREQ_PM         => { 
 		'Exporter' => 5.0,
