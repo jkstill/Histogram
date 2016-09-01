@@ -129,7 +129,7 @@ sub _createBuckets {
 	}
 
 	#print '_createBuckets: ', Dumper($self);
-	my $bucketSize = int(($max-$min)/$self->{BUCKET_COUNT});
+	my $bucketSize = sprintf("%.0f",(($max-$min)/$self->{BUCKET_COUNT}));
 	#print "_createBuckets bucketSize $bucketSize\n";
 	$self->{MIN_VALUE} = $min;
 	$self->{MAX_VALUE} = $max;
@@ -138,7 +138,7 @@ sub _createBuckets {
 
 	for (@{$self->{DATA}}) {
 		my $n = $_;
-		my $bucket = ($n - $n%$bucketSize ) + $bucketSize;
+		my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
 	
 		#print "n: $n  bucket $bucket\n";
 		

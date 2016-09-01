@@ -5,18 +5,18 @@ use lib './lib';
 
 use Histogram;
 
-my $randMax=7537;
+my $randMax=75370;
 
 my @data = map { int(rand($randMax)) } (1..$randMax);
 
 #print Dumper(\@data);
 
-my $bucketCount=27; # will actually be +1 for the max value
+my $bucketCount=20; # will actually be +1 for the max value
 
 # print a histogram
 my $maxHistLineLen=50;
 my $histChar='*';
-my $filterValueLower=2000;
+my $filterValueLower=4500;
 my $filterValueUpper=5000;
 my $limitOperatorLower = '>';
 my $limitOperatorUpper = '<=';
