@@ -5,6 +5,8 @@ see bin/histogram-demo.pl
 
 bin/data-histogram.pl:
 
+<pre>
+
   usage: data-histogram.pl - create a histogram from a series of integers
 
   --bucket-count    number of buckets - defaults to 20
@@ -32,4 +34,5 @@ bin/data-histogram.pl:
   90: ##
   99: #
  108: #
+</pre>
 
