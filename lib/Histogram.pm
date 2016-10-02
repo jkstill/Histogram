@@ -129,26 +129,59 @@ sub _createBuckets {
 	}
 
 	#print '_createBuckets: ', Dumper($self);
-	my $bucketSize = sprintf("%.0f",(($max-$min)/$self->{BUCKET_COUNT}));
+	#my $bucketSize = sprintf("%.0f",(($max-$min)/$self->{BUCKET_COUNT}));
+	my $bucketSize = 0;
+	my ($sanityLevel,$sanityLimit) = (0,100);
+
+	# avoid bucketSize < 1 as it leads to divide by 0 errors with the modulus operator
+	# try perl -e '$x=10%.5'
+	# reduce bucket count until bucket size is at least 1
+	my $bucketCount = $self->{BUCKET_COUNT};
+	while ($bucketSize < 1) {
+		$bucketSize = sprintf("%.0f",(($max-$min)+1)/$bucketCount);
+		$sanityLevel++;
+		$bucketCount--;
+
+		die "Error getting bucketSize in Histogram module\n" if $sanityLevel >= $sanityLimit;
+	}
+	
+	if ($sanityLevel > 1) {
+		warn "Backup Count Decreased to $bucketCount to avoid modulus divide by zero\n\n";
+		$self->{BUCKET_COUNT} = $bucketCount;
+	}
+
 	#print "_createBuckets bucketSize $bucketSize\n";
 	$self->{MIN_VALUE} = $min;
 	$self->{MAX_VALUE} = $max;
+
+#print qq{
+#
+#min: $self->{MIN_VALUE}
+#max: $self->{MAX_VALUE}
+#bucketCount: $self->{BUCKET_COUNT}
+#bucketSize $bucketSize
+#
+#};
 
 	my $maxHistogramCount=0;
 
 	for (@{$self->{DATA}}) {
 		my $n = $_;
+
 		my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
 	
 		#print "n: $n  bucket $bucket\n";
-		
-		push @{$hdata{$bucket}}, $n;
+		$hdata{$bucket}++;
 
 	}
 
+	#print 'hdata: ' . Dumper(\%hdata), "\n";
 
+
+	my $totalMetricCount=0;
 	foreach my $bucket ( sort {$a <=> $b} keys %hdata ) {
-		my $hCount=$#{$hdata{$bucket}}+1;
+		my $hCount=$hdata{$bucket};
+		$totalMetricCount += $hCount;
 		#print "Bucket:Counts:  $bucket : $hCount \n";
 		# get the max count
 		$maxHistogramCount = $hCount unless $maxHistogramCount > $hCount
@@ -156,9 +189,12 @@ sub _createBuckets {
 
 
 	#print "maxHistogramCount $maxHistogramCount\n";
+	#print "Line Length: $self->{LINE_LENGTH}\n";
 
 	$self->{HDATA} = \%hdata;
 	$self->{_countPerChar} = $self->{LINE_LENGTH} / $maxHistogramCount;
+	$self->{_totalMetricCount} = $totalMetricCount;
+	#print "_countPerChar: $self->{_countPerChar}\n";
 	
 	#print '_createBuckets: ', Dumper($self);
 
@@ -174,10 +210,20 @@ sub prepare {
 	my %hdata = %{$self->{HDATA}};
 
 	foreach my $bucket ( sort {$a <=> $b} keys %hdata ) {
-	
-		my $lineLen = int( $#{$hdata{$bucket}}+1  / $self->{_countPerChar});
-		my $hline = sprintf("%10d: ",$bucket );
-		$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar}) ;
+
+		my $pct = $hdata{$bucket} / $self->{_totalMetricCount} * 100;
+		# strange of of sprintf seems the only way to correctly right justify the pct
+		# sprintf('%3.1f',$pct) is not doing it
+		my $hline = sprintf("%10d: %5s%%  ",$bucket, sprintf('%3.1f',$pct));
+		my $lineLen=0;
+		if ($self->{_countPerChar} < 1 ) {
+			$lineLen = int( $hdata{$bucket}  * $self->{_countPerChar});
+			$hline .= $self->{HIST_CHAR} x  $lineLen  ;
+		} else {
+			$lineLen = int( $hdata{$bucket}  / $self->{_countPerChar});
+			$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar}) ;
+		}
+		#print "lineLen: $lineLen\n";
 		push @histogram, $hline;
 		#print "$hline\n";
 	}
