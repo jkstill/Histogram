@@ -146,7 +146,7 @@ sub _createBuckets {
 	}
 	
 	if ($sanityLevel > 1) {
-		warn "Backup Count Decreased to $bucketCount to avoid modulus divide by zero\n\n";
+		warn "Bucket Count Decreased to $bucketCount to avoid modulus divide by zero\n\n";
 		$self->{BUCKET_COUNT} = $bucketCount;
 	}
 
