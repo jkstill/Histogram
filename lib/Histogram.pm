@@ -92,6 +92,8 @@ sub _createBuckets {
 
 	my $readFromFile = $self->{FILE} ? 1 : 0;
 
+	#print "readFromFile: $readFromFile\n";
+
 	FILTER_DATA: {
 		if ( $filterUsed ) {
 			# check for allowed operator
@@ -125,8 +127,8 @@ sub _createBuckets {
 				#print "Eval String; $evalStr\n";
 				@tmpData = eval $evalStr;
 	
-				#print Dumper(\@tmpData);
-
+				#print 'tmpdata: ' . Dumper(\@tmpData);
+				#
 				$self->{DATA} = \@tmpData;
 			}
 		}
@@ -134,34 +136,50 @@ sub _createBuckets {
 
 	my ($min,$max) = (10**20,0);
 
-
 	my @data;
 
 	if ($readFromFile) {
 		tie @data, 'Tie::File', $self->{FILE} or die "Cannot tie to filehandle - $!\n";
-	} else {
-		@data = @{$self->{DATA}};
-	}
+	} ; #else {
+	#@data = @{$self->{DATA}};
+	#}
 
-	for (@data) {
-		my $n = $_;
-		if ($readFromFile and $filterUsed) {
-			my $skipit=0;
-			my $evalStr= q[ if ($n ]
-				. qq[ $opLower  $filterValueLower ]
-				. q[ and $n ]
-				. qq[ $opUpper $filterValueUpper ) ]
-				. q[ { $skipit = 1 };];
-			eval $evalStr;
-			next unless $skipit;
+	if ($readFromFile) {
+		#print "Reading from FILE\n";
+		for (@data) {
+			my $n = $_;
+			if ($filterUsed) {
+				my $skipit=0;
+				my $evalStr= q[ if ($n ]
+					. qq[ $opLower  $filterValueLower ]
+					. q[ and $n ]
+					. qq[ $opUpper $filterValueUpper ) ]
+					. q[ { $skipit = 1 };];
+				eval $evalStr;
+				next unless $skipit;
+			}
+
+			$min = $n if $n < $min;
+			$max = $n if $n > $max;
 		}
 
-		$min = $n if $n < $min;
-		$max = $n if $n > $max;
-
-
+	} else {
+		#print "Reading from STDIN\n";
+		#print Dumper($self->{DATA});
+		for (@{$self->{DATA}}) {
+			my $n = $_;
+			$min = $n if $n < $min;
+			$max = $n if $n > $max;
+			#print "n: $n   min: $min   max: $max\n";
+		}
 	}
 
+	#print qq{
+
+	#min: $min
+	#max: $max
+
+#};
 
 	#print '_createBuckets: ', Dumper($self);
 	#my $bucketSize = sprintf("%.0f",(($max-$min)/$self->{BUCKET_COUNT}));
@@ -172,7 +190,10 @@ sub _createBuckets {
 	# try perl -e '$x=10%.5'
 	# reduce bucket count until bucket size is at least 1
 	my $bucketCount = $self->{BUCKET_COUNT};
+	#print "bucketCount: $bucketCount\n";
 	while ($bucketSize < 1) {
+		#print "bucketCount: $bucketCount\n";
+		#print "bucketSize $bucketSize\n\n";
 		$bucketSize = sprintf("%.0f",(($max-$min)+1)/$bucketCount);
 		$sanityLevel++;
 		$bucketCount--;
@@ -200,26 +221,35 @@ sub _createBuckets {
 
 	my $maxHistogramCount=0;
 
-	#for (@{$self->{DATA}}) {
-	for (@data) {
-		my $n = $_;
+	if ($readFromFile) {
+		for (@data) {
+			my $n = $_;
 
-		if ($readFromFile and $filterUsed) {
-			my $skipit=0;
-			my $evalStr= q[ if ($n ]
-				. qq[ $opLower  $filterValueLower ]
-				. q[ and $n ]
-				. qq[ $opUpper $filterValueUpper ) ]
-				. q[ { $skipit = 1 };];
-			eval $evalStr;
-			next unless $skipit;
-		}
+			if ($filterUsed) {
+				my $skipit=0;
+				my $evalStr= q[ if ($n ]
+					. qq[ $opLower  $filterValueLower ]
+					. q[ and $n ]
+					. qq[ $opUpper $filterValueUpper ) ]
+					. q[ { $skipit = 1 };];
+				eval $evalStr;
+				next unless $skipit;
+			}
 
-		my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
+			my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
 	
-		#print "n: $n  bucket $bucket\n";
-		$hdata{$bucket}++;
+			#print "n: $n  bucket $bucket\n";
+			$hdata{$bucket}++;
 
+		}
+	} else {
+		for (@{$self->{DATA}}) {
+			my $n = $_;
+			my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
+	
+			#print "n: $n  bucket $bucket\n";
+			$hdata{$bucket}++;
+		}
 	}
 
 	#print 'hdata: ' . Dumper(\%hdata), "\n";
