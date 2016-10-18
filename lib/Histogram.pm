@@ -3,6 +3,7 @@ package Histogram;
 
 use strict;
 use warnings;
+use Tie::File;
 use Data::Dumper;
 
 =head1 Histogram
@@ -49,6 +50,7 @@ use Data::Dumper;
 
 =cut
 
+our $debug = 1;
 
 sub new {
 	
@@ -76,57 +78,90 @@ sub _createBuckets {
 	#print join(' - ', keys %{$parms}), "\n";
 
 	my %hdata=();
+	
+	my $filterUsed=0;
+
+	if ( 
+			defined($self->{FILTER_OPER_LOWER})
+			and defined($self->{FILTER_OPER_UPPER})
+			and defined($self->{FILTER_LIMIT_LOWER}) 
+			and defined($self->{FILTER_LIMIT_UPPER}) 
+	) { $filterUsed=1 }
+
+	my ($opLower, $opUpper, $filterValueLower, $filterValueUpper);
+
+	my $readFromFile = $self->{FILE} ? 1 : 0;
 
 	FILTER_DATA: {
-		if ( 
-				defined($self->{FILTER_OPER_LOWER})
-				and defined($self->{FILTER_OPER_UPPER})
-				and defined($self->{FILTER_LIMIT_LOWER}) 
-				and defined($self->{FILTER_LIMIT_UPPER}) 
-		) {
+		if ( $filterUsed ) {
 			# check for allowed operator
 			my @allowedOperators = qw(< > <= >=);
 
-			my $opLower=$self->{FILTER_OPER_LOWER};
+			$opLower=$self->{FILTER_OPER_LOWER};
 			if ( ! grep(/^$opLower$/,@allowedOperators) ) {
+				warn "Unqualified lower filter operator detected - '$opLower' - bypassing filter\n";
 				last FILTER_DATA;
 			}
 
-			my $opUpper=$self->{FILTER_OPER_UPPER};
+			$opUpper=$self->{FILTER_OPER_UPPER};
 			if ( ! grep(/^$opUpper$/,@allowedOperators) ) {
+				warn "Unqualified upper filter operator detected - '$opLower' - bypassing filter\n";
 				last FILTER_DATA;
 			}
 
-			my $filterValueLower = $self->{FILTER_LIMIT_LOWER};
-			my $filterValueUpper = $self->{FILTER_LIMIT_UPPER};
+			$filterValueLower = $self->{FILTER_LIMIT_LOWER};
+			$filterValueUpper = $self->{FILTER_LIMIT_UPPER};
 
-			my @tmpData;
-			#print "OP: $op\n";
-			#print "Value $filterValue\n";
-			my $evalStr= q[grep { $_ ]
-				. qq[ $opLower  $filterValueLower ]
-				. q[ and $_ ]
-				. qq[ $opUpper $filterValueUpper  ]
-				. q[ } @{$self->{DATA}};];
+			unless ($readFromFile) { # file data filtered later
+				my @tmpData;
+				#print "OP: $op\n";
+				#print "Value $filterValue\n";
+				my $evalStr= q[grep { $_ ]
+					. qq[ $opLower  $filterValueLower ]
+					. q[ and $_ ]
+					. qq[ $opUpper $filterValueUpper  ]
+					. q[ } @{$self->{DATA}};];
 
-			#print "Eval String; $evalStr\n";
-			@tmpData = eval $evalStr;
+				#print "Eval String; $evalStr\n";
+				@tmpData = eval $evalStr;
+	
+				#print Dumper(\@tmpData);
 
-			#print Dumper(\@tmpData);
-
-			$self->{DATA} = \@tmpData;
-
+				$self->{DATA} = \@tmpData;
+			}
 		}
 	}
 
 	my ($min,$max) = (10**20,0);
 
-	for (@{$self->{DATA}}) {
+
+	my @data;
+
+	if ($readFromFile) {
+		tie @data, 'Tie::File', $self->{FILE} or die "Cannot tie to filehandle - $!\n";
+	} else {
+		@data = @{$self->{DATA}};
+	}
+
+	for (@data) {
 		my $n = $_;
-		#print "n:|$n|\n";
+		if ($readFromFile and $filterUsed) {
+			my $skipit=0;
+			my $evalStr= q[ if ($n ]
+				. qq[ $opLower  $filterValueLower ]
+				. q[ and $n ]
+				. qq[ $opUpper $filterValueUpper ) ]
+				. q[ { $skipit = 1 };];
+			eval $evalStr;
+			next unless $skipit;
+		}
+
 		$min = $n if $n < $min;
 		$max = $n if $n > $max;
+
+
 	}
+
 
 	#print '_createBuckets: ', Dumper($self);
 	#my $bucketSize = sprintf("%.0f",(($max-$min)/$self->{BUCKET_COUNT}));
@@ -165,8 +200,20 @@ sub _createBuckets {
 
 	my $maxHistogramCount=0;
 
-	for (@{$self->{DATA}}) {
+	#for (@{$self->{DATA}}) {
+	for (@data) {
 		my $n = $_;
+
+		if ($readFromFile and $filterUsed) {
+			my $skipit=0;
+			my $evalStr= q[ if ($n ]
+				. qq[ $opLower  $filterValueLower ]
+				. q[ and $n ]
+				. qq[ $opUpper $filterValueUpper ) ]
+				. q[ { $skipit = 1 };];
+			eval $evalStr;
+			next unless $skipit;
+		}
 
 		my $bucket = ($n - ($n%$bucketSize) ) + $bucketSize;
 	
