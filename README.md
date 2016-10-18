@@ -16,6 +16,11 @@ bin/data-histogram.pl:
   --lower-limit-val value for lower bound
   --upper-limit-op  operator for upper bounds - one of < > <= >=
   --upper-limit-val value for upper bound
+  --file            read data from a file
+                    this is useful only for files to large for memory
+                    this option is quite slow as it uses the Tie::File package
+                    the only advantage is very large files may be processed
+
   --h|help
 
   example:
