@@ -25,6 +25,15 @@ bin/data-histogram.pl:
 
   example:
 
+Histogram of reads
+
+head -1 /home/jkstill/perl/modules/roc/data/asm-dg-metrics-1.csv  | cut -f7 -d,
+READS
+
+(looks like a limit bug in the demo)
+
+filter on READS of between 1 and 10
+
 grep shrprd01 /home/jkstill/perl/modules/roc/data/asm-dg-metrics-1.csv  | cut -f7 -d, | data-histogram.pl --lower-limit-op '>=' --lower-limit-val 1 --upper-limit-op '<=' --upper-limit-val 10
 Backup Count Decreased to 18 to avoid modulus divide by zero
 
@@ -39,5 +48,36 @@ Backup Count Decreased to 18 to avoid modulus divide by zero
         10:   1.1%  **
         11:   0.6%  *
 
+Histogram for size of reads <  ~80 Megabytes
+
+head -1 /home/jkstill/perl/modules/roc/data/asm-dg-metrics-1.csv  | cut -f11 -d,
+BYTES_READ
+
+
+ grep shrprd01 /home/jkstill/perl/modules/roc/data/asm-dg-metrics-1.csv  | cut -f11 -d, | bin/data-histogram.pl --lower-limit-op '>=' --lower-limit-val 1 --upper-limit-op '<=' --upper-limit-val 819940556
+  40991565:  83.1%  ****************************************************************************************************
+  81983130:   3.5%  ****
+ 122974695:   1.0%  *
+ 163966260:   0.5%
+ 204957825:   0.4%
+ 245949390:   0.3%
+ 286940955:   0.4%
+ 327932520:   0.4%
+ 368924085:   0.8%
+ 409915650:   1.8%  **
+ 450907215:   1.7%  **
+ 491898780:   1.4%  *
+ 532890345:   0.6%
+ 573881910:   0.4%
+ 614873475:   0.5%
+ 655865040:   0.8%
+ 696856605:   1.0%  *
+ 737848170:   0.8%
+ 778839735:   0.4%
+ 819831300:   0.2%
+ 860822865:   0.0%
+
+
 </pre>
+
 

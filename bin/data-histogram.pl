@@ -36,13 +36,6 @@ GetOptions(\%optctl,
 
 usage(0) if ( $optctl{h} or $optctl{help});
 
-
-#my @data=<>;
-#chomp @data;
-
-my @data;
-my $fh;
-
 # reading from file
 if ($file) {
 	$fh = IO::File->new($file,'r') || die "cannot read file $file - $!\n";
