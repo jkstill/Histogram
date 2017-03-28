@@ -35,7 +35,7 @@ READS
 filter on READS of between 1 and 10
 
 grep shrprd01 /home/jkstill/perl/modules/roc/data/asm-dg-metrics-1.csv  | cut -f7 -d, | data-histogram.pl --lower-limit-op '>=' --lower-limit-val 1 --upper-limit-op '<=' --upper-limit-val 10
-Backup Count Decreased to 18 to avoid modulus divide by zero
+Bucket Count Decreased to 18 to avoid modulus divide by zero
 
          2:  50.1%  ****************************************************************************************************
          3:  33.4%  ******************************************************************
