@@ -87,6 +87,14 @@ usage: $basename - create a histogram from a series of integers
                    the only advantage is very large files may be processed
  --h|help
 
+Note: 
+
+ When reading from a file this script can be quite slow
+ This is because when reading from a file, the File::Tie package is used to write to disk
+ The purpose is to support very large files.
+
+ If you have sufficient memory, it is MUCH faster to pipe the data to the script.
+
 example:
 
    cut -d, -f2 mydata.csv | $basename --lower-limit-op '>=' --lower-limit-val 1 --upper-limit-op '<=' --upper-limit-val 99  --bucket-count 10
