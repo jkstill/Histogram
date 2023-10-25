@@ -212,9 +212,9 @@ sub _createBuckets {
 	}
 	}
 
-	print "bucketCount: $bucketCount\n";
-	print "bucketSize $bucketSize\n\n";
-	print "_createBuckets bucketSize $bucketSize\n";
+	#print "bucketCount: $bucketCount\n";
+	#print "bucketSize $bucketSize\n\n";
+	#print "_createBuckets bucketSize $bucketSize\n";
 	$self->{MIN_VALUE} = $min;
 	$self->{MAX_VALUE} = $max;
 
