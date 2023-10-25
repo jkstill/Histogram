@@ -2,7 +2,7 @@
 #
 # Create a histogram from data and print
 
-#use lib './lib';
+use lib './lib';
 
 use Data::Dumper;
 use Histogram;
@@ -12,6 +12,7 @@ use IO::File;
 my %optctl;
 
 my $bucketCount=20; # will actually be +1 for the max value
+my $bucketSize=0;
 my $maxHistLineLen=100;
 my $histChar='*';
 my $file='';
@@ -24,6 +25,7 @@ my $limitValueUpper;
 
 GetOptions(\%optctl,
 	"bucket-count=i" => \ $bucketCount,
+	"bucket-size=i" => \$bucketSize,
 	"line-length=i" => \$maxHistLineLen,
 	"hist-char=s" => \$histChar,
 	"file=s" => \$file,
@@ -52,6 +54,7 @@ my $h=Histogram->new(
 		LINE_LENGTH =>  $maxHistLineLen,
 		HIST_CHAR => $histChar,
 		BUCKET_COUNT => $bucketCount,
+		BUCKET_SIZE => $bucketSize,
 		DATA => \@data,
 		FILE => $fh,
 		FILTER_OPER_LOWER => $limitOperatorLower,
@@ -75,6 +78,7 @@ $basename
 usage: $basename - create a histogram from a series of integers
 
  --bucket-count    number of buckets - defaults to $bucketCount
+ --bucket-size     size of buckets - defaults to 0, then calculated in Histogram.pm
  --line-length     max length of histogram lines - defaults to  $maxHistLineLen
  --hist-char       character used for histogram lines - defaults to $histChar
  --lower-limit-op  operator for lower bounds - one of < > <= >=

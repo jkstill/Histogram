@@ -35,6 +35,7 @@ use Data::Dumper;
       LINE_LENGTH =>  $maxHistLineLen,
       HIST_CHAR => '*',
       BUCKET_COUNT => $bucketCount,
+		BUCKET_SIZE => $bucketSize,
       DATA => \@data,
       FILTER_OPER_LOWER =>  $limitOperatorLower,
       FILTER_OPER_UPPER =>  $limitOperatorUpper,
@@ -190,6 +191,10 @@ sub _createBuckets {
 	# try perl -e '$x=10%.5'
 	# reduce bucket count until bucket size is at least 1
 	my $bucketCount = $self->{BUCKET_COUNT};
+	if ( $self->{BUCKET_SIZE} ) {
+		$bucketSize = $self->{BUCKET_SIZE};
+	} else {
+	
 	#print "bucketCount: $bucketCount\n";
 	while ($bucketSize < 1) {
 		#print "bucketCount: $bucketCount\n";
@@ -205,8 +210,11 @@ sub _createBuckets {
 		warn "Bucket Count Decreased to $bucketCount to avoid modulus divide by zero\n\n";
 		$self->{BUCKET_COUNT} = $bucketCount;
 	}
+	}
 
-	#print "_createBuckets bucketSize $bucketSize\n";
+	print "bucketCount: $bucketCount\n";
+	print "bucketSize $bucketSize\n\n";
+	print "_createBuckets bucketSize $bucketSize\n";
 	$self->{MIN_VALUE} = $min;
 	$self->{MAX_VALUE} = $max;
 
