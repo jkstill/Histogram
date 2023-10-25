@@ -2,7 +2,7 @@
 #
 # Create a histogram from data and print
 
-use lib './lib';
+#use lib './lib';
 
 use Data::Dumper;
 use Histogram;
