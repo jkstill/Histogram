@@ -293,6 +293,9 @@ sub prepare {
 
 	#print "PRINT ROUTINE\n";
 	my %hdata = %{$self->{HDATA}};
+	if ( $self->{SHOW_COUNT} ) {
+		print "Metrics per '$self->{HIST_CHAR}':  " . sprintf("%6.2f\n",1 / $self->{_countPerChar});
+	}
 
 	foreach my $bucket ( sort {$a <=> $b} keys %hdata ) {
 
