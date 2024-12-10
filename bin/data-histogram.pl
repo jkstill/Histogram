@@ -7,8 +7,6 @@
 use Data::Dumper;
 use Getopt::Long;
 use IO::File;
-
-use lib '/home/jkstill/perl-modules/Histogram/lib';
 use Histogram;
 
 my %optctl;
