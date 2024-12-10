@@ -5,9 +5,11 @@
 #use lib './lib';
 
 use Data::Dumper;
-use Histogram;
 use Getopt::Long;
 use IO::File;
+
+use lib '/home/jkstill/perl-modules/Histogram/lib';
+use Histogram;
 
 my %optctl;
 
@@ -22,12 +24,14 @@ my $limitOperatorLower;
 my $limitOperatorUpper;
 my $limitValueLower;
 my $limitValueUpper;
+my $showCount=0;
 
 GetOptions(\%optctl,
 	"bucket-count=i" => \ $bucketCount,
 	"bucket-size=i" => \$bucketSize,
 	"line-length=i" => \$maxHistLineLen,
 	"hist-char=s" => \$histChar,
+	"show-count!" => \$showCount,
 	"file=s" => \$file,
 	"lower-limit-op=s" => \$limitOperatorLower,
 	"lower-limit-val=i" => \$limitValueLower,
@@ -55,6 +59,7 @@ my $h=Histogram->new(
 		HIST_CHAR => $histChar,
 		BUCKET_COUNT => $bucketCount,
 		BUCKET_SIZE => $bucketSize,
+		SHOW_COUNT => $showCount,
 		DATA => \@data,
 		FILE => $fh,
 		FILTER_OPER_LOWER => $limitOperatorLower,
@@ -81,6 +86,7 @@ usage: $basename - create a histogram from a series of integers
  --bucket-size     size of buckets - defaults to 0, then calculated in Histogram.pm
  --line-length     max length of histogram lines - defaults to  $maxHistLineLen
  --hist-char       character used for histogram lines - defaults to $histChar
+ --show-count      show the count of items when the bucket count is too low to print the histogram character
  --lower-limit-op  operator for lower bounds - one of < > <= >=
  --lower-limit-val value for lower bound
  --upper-limit-op  operator for upper bounds - one of < > <= >=

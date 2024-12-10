@@ -304,11 +304,20 @@ sub prepare {
 		if ($self->{_countPerChar} < 1 ) {
 			$lineLen = int( $hdata{$bucket}  * $self->{_countPerChar});
 			$hline .= $self->{HIST_CHAR} x  $lineLen  ;
+
 		} else {
 			$lineLen = int( $hdata{$bucket}  / $self->{_countPerChar});
 			$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar}) ;
+			$hline .= ' B';
+			#$hline .=- $hdata{$bucket};
 		}
+		
 		#print "lineLen: $lineLen\n";
+		
+		if ( $self->{SHOW_COUNT} and $lineLen < 1 ) {
+			$hline .= $hdata{$bucket};
+		}
+
 		push @histogram, $hline;
 		#print "$hline\n";
 	}
