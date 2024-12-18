@@ -22,6 +22,7 @@ my $limitOperatorLower;
 my $limitOperatorUpper;
 my $limitValueLower;
 my $limitValueUpper;
+my $scaleFactor=1.0;
 my $showCount=0;
 
 GetOptions(\%optctl,
@@ -35,6 +36,7 @@ GetOptions(\%optctl,
 	"lower-limit-val=i" => \$limitValueLower,
 	"upper-limit-op=s" => \$limitOperatorUpper,
 	"upper-limit-val=i" => \$limitValueUpper,
+	"scale-factor=f" => \$scaleFactor,
 	"h|help",
 );
 
@@ -45,7 +47,8 @@ if ($file) {
 	$fh = IO::File->new($file,'r') || die "cannot read file $file - $!\n";
 } else {
 # acting as filter
-	while (<>) {chomp; push @data,sprintf("%.0f",$_)}
+	#while (<>) {chomp; push @data,sprintf("%.0f",$_)}
+	while (<>) {chomp; push @data,$_)}
 }
 
 #print "File: $file\n";
@@ -64,6 +67,7 @@ my $h=Histogram->new(
 		FILTER_LIMIT_LOWER => $limitValueLower,
 		FILTER_OPER_UPPER => $limitOperatorUpper,
 		FILTER_LIMIT_UPPER => $limitValueUpper,
+		SCALE_FACTOR => $scaleFactor,
 	}
 );
 
@@ -89,6 +93,10 @@ usage: $basename - create a histogram from a series of integers
  --lower-limit-val value for lower bound
  --upper-limit-op  operator for upper bounds - one of < > <= >=
  --upper-limit-val value for upper bound
+ --scale-factor    scale the data by this factor - defaults to 1
+                   used when the lines in buckets are too long
+                   typically use values < 1
+
  --file            read data from a file 
                    this is useful only for files to large for memory
                    this option is quite slow as it uses the Tie::File package

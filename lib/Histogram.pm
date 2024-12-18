@@ -40,7 +40,8 @@ use Data::Dumper;
       FILTER_OPER_LOWER =>  $limitOperatorLower,
       FILTER_OPER_UPPER =>  $limitOperatorUpper,
       FILTER_LIMIT_LOWER =>  $minValue,
-      FILTER_LIMIT_UPPER =>  $maxValue
+      FILTER_LIMIT_UPPER =>  $maxValue,
+		SCALE_FACTOR => 2
    }
  );
 
@@ -52,6 +53,7 @@ use Data::Dumper;
 =cut
 
 our $debug = 1;
+our $VERSION = '0.02';
 
 sub new {
 	
@@ -302,22 +304,22 @@ sub prepare {
 		my $pct = $hdata{$bucket} / $self->{_totalMetricCount} * 100;
 		# strange of of sprintf seems the only way to correctly right justify the pct
 		# sprintf('%3.1f',$pct) is not doing it
-		my $hline = sprintf("%10d: %5s%%  ",$bucket, sprintf('%3.1f',$pct));
+		my $hline = sprintf("%32u: %5s%%  ",$bucket, sprintf('%3.1f',$pct));
 		my $lineLen=0;
 		if ($self->{_countPerChar} < 1 ) {
 			$lineLen = int( $hdata{$bucket}  * $self->{_countPerChar});
-			$hline .= $self->{HIST_CHAR} x  $lineLen  ;
+			$hline .= $self->{HIST_CHAR} x  int($lineLen * $self->{SCALE_FACTOR}) ;
 
 		} else {
 			$lineLen = int( $hdata{$bucket}  / $self->{_countPerChar});
-			$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar}) ;
-			$hline .= ' B';
+			$hline .= $self->{HIST_CHAR} x int( $lineLen  * $self->{_countPerChar} * $self->{SCALE_FACTOR}) ;
+			#$hline .= ' B';
 			#$hline .=- $hdata{$bucket};
 		}
 		
 		#print "lineLen: $lineLen\n";
 		
-		if ( $self->{SHOW_COUNT} and $lineLen < 1 ) {
+		if ( $self->{SHOW_COUNT} and int($lineLen * $self->{SCALE_FACTOR}) < 1 ) {
 			$hline .= $hdata{$bucket};
 		}
 
