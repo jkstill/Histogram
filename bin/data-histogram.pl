@@ -48,7 +48,7 @@ if ($file) {
 } else {
 # acting as filter
 	#while (<>) {chomp; push @data,sprintf("%.0f",$_)}
-	while (<>) {chomp; push @data,$_)}
+	while (<>) {chomp; push @data,$_}
 }
 
 #print "File: $file\n";
